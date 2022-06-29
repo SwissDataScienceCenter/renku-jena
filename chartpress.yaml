@@ -11,6 +11,6 @@ charts:
       renku-jena:
         contextPath: .
         dockerfilePath: Dockerfile
-        valuesPath: renku-jena.image
+        valuesPath: image
         buildArgs:
           JENA_VERSION: "4.5.0"
