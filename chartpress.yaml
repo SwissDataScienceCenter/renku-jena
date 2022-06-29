@@ -1,0 +1,16 @@
+charts:
+  - name: helm-chart/renku-jena
+    resetTag: latest
+    imagePrefix: renku/
+    repo:
+      git: SwissDataScienceCenter/helm-charts
+      published: https://swissdatasciencecenter.github.io/helm-charts
+    paths:
+      - .
+    images:
+      renku-jena:
+        contextPath: .
+        dockerfilePath: Dockerfile
+        valuesPath: renku-jena.image
+        buildArgs:
+          FUSEKI_DOCKER_TOOLS: "4.5.0"
