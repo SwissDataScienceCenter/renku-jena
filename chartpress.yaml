@@ -1,5 +1,5 @@
 charts:
-  - name: helm-chart/renku-jena
+  - name: renku-jena
     resetTag: latest
     imagePrefix: renku/
     repo:
@@ -13,4 +13,4 @@ charts:
         dockerfilePath: Dockerfile
         valuesPath: renku-jena.image
         buildArgs:
-          FUSEKI_DOCKER_TOOLS: "4.5.0"
+          JENA_VERSION: "4.5.0"

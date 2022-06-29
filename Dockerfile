@@ -6,7 +6,7 @@
 ## the License.  You may obtain a copy of the License at
 ##
 ##     http://www.apache.org/licenses/LICENSE-2.0
-## 
+##
 ## Unless required by applicable law or agreed to in writing, software
 ## distributed under the License is distributed on an "AS IS" BASIS,
 ## WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -102,14 +102,14 @@ RUN \
     mkdir -p $LOGS && \
     mkdir -p $DATA && \
     chown -R fuseki ${FUSEKI_DIR} && \
-    chmod a+x entrypoint.sh 
+    chmod a+x entrypoint.sh
 
 ## Default environment variables.
 ENV \
-    JAVA_HOME=${JAVA_MINIMAL}           \
-    JAVA_OPTIONS=${JAVA_OPTIONS}  \
-    JENA_VERSION=${JENA_VERSION}        \
-    FUSEKI_JAR="${FUSEKI_JAR}"          \
+    JAVA_HOME=${JAVA_MINIMAL}    \
+    JAVA_OPTIONS=${JAVA_OPTIONS} \
+    JENA_VERSION=${JENA_VERSION} \
+    FUSEKI_JAR="${FUSEKI_JAR}"   \
     FUSEKI_DIR="${FUSEKI_DIR}"
 
 USER fuseki
