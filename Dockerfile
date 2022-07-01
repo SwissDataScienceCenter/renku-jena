@@ -19,102 +19,108 @@
 
 ARG OPENJDK_VERSION=17
 ARG ALPINE_VERSION=3.15.0
-ARG JENA_VERSION=""
+ARG JENA_VERSION="4.5.0"
 ARG JAVA_OPTIONS="-Xmx2048m -Xms2048m"
 
 # Internal, passed between stages.
-ARG FUSEKI_DIR=/fuseki
-ARG FUSEKI_JAR=jena-fuseki-server-${JENA_VERSION}.jar
+ARG FUSEKI_HOME=/jena-fuseki
+ARG FUSEKI_BASE=/fuseki
 ARG JAVA_MINIMAL=/opt/java-minimal
 
 ## ---- Stage: Download and build java.
-FROM openjdk:${OPENJDK_VERSION}-alpine AS base
+FROM openjdk:${OPENJDK_VERSION}-alpine AS build-stage
 
-ARG JAVA_MINIMAL
 ARG JENA_VERSION
-ARG FUSEKI_DIR
-ARG FUSEKI_JAR
+ARG FUSEKI_HOME
+ARG FUSEKI_BASE
+ARG JAVA_MINIMAL
+ARG JAVA_OPTIONS
 ARG REPO=https://repo1.maven.org/maven2
-ARG JAR_URL=${REPO}/org/apache/jena/jena-fuseki-server/${JENA_VERSION}/${FUSEKI_JAR}
+ARG FUSEKI_TAR_NAME=apache-jena-fuseki-${JENA_VERSION}
+ARG FUSEKI_TAR=${FUSEKI_TAR_NAME}.tar.gz
+ARG TAR_URL=${REPO}/org/apache/jena/apache-jena-fuseki/${JENA_VERSION}/${FUSEKI_TAR}
 
 RUN [ "${JENA_VERSION}" != "" ] || { echo -e '\n**** Set JENA_VERSION ****\n' ; exit 1 ; }
 RUN echo && echo "==== Docker build for Apache Jena Fuseki ${JENA_VERSION} ====" && echo
 
 # Alpine: For objcopy used in jlink
-RUN apk add --no-cache curl binutils
+RUN apk add --no-cache curl tar binutils
 
-## -- Fuseki installed and runs in /fuseki.
-WORKDIR $FUSEKI_DIR
+## -- Fuseki binaries in FUSEKI_HOME.
+WORKDIR /tmp
 
-## -- Download the jar file.
+## -- Download the tar.gz file with check of the SHA1 checksum.
 COPY download.sh .
 RUN chmod a+x download.sh
+RUN ./download.sh --chksum sha1 "${TAR_URL}"
 
-# Download, with check of the SHA1 checksum.
-RUN ./download.sh --chksum sha1 "$JAR_URL"
+## -- Extract the TAR and move files to $FUSEKI_HOME
+RUN mkdir $FUSEKI_HOME && \
+    tar zxf ${FUSEKI_TAR} && \
+    mv ${FUSEKI_TAR_NAME}/* ${FUSEKI_HOME}
 
-## -- Alternatives to download : copy already downloaded.
-## COPY ${FUSEKI_JAR} .
+## -- Copying shiro.ini template for securing admin endpoints
+COPY shiro.ini ${FUSEKI_HOME}/run/shiro.ini
 
-## Use Docker ADD - does not retry, does not check checksum, and may run every build.
-## ADD "$JAR_URL"
+## -- Copying log4j2.properties
+COPY log4j2.properties ${FUSEKI_HOME}/run/log4j2.properties
 
 ## -- Make reduced Java JDK
-
 ARG JDEPS_EXTRA="jdk.crypto.cryptoki,jdk.crypto.ec"
 RUN \
-  JDEPS="$(jdeps --multi-release base --print-module-deps --ignore-missing-deps ${FUSEKI_JAR})"  && \
+  JDEPS="$(jdeps --multi-release base --print-module-deps --ignore-missing-deps ${FUSEKI_HOME}/fuseki-server.jar)"  && \
   jlink \
         --compress 2 --strip-debug --no-header-files --no-man-pages \
         --output "${JAVA_MINIMAL}" \
         --add-modules "${JDEPS},${JDEPS_EXTRA}"
 
-ADD entrypoint.sh .
-ADD log4j2.properties .
+## -- Copying entrypoint.sh
+COPY entrypoint.sh /
 
 # Run as this user
-# -H : no home directorry
 # -D : no password
 
-RUN adduser -H -D fuseki fuseki
+RUN adduser -D fuseki fuseki
 
 ## ---- Stage: Build runtime
 FROM alpine:${ALPINE_VERSION}
 
 ## Import ARGs
 ARG JENA_VERSION
+ARG FUSEKI_HOME
+ARG FUSEKI_BASE
 ARG JAVA_MINIMAL
-ARG FUSEKI_DIR
-ARG FUSEKI_JAR
+ARG JAVA_OPTIONS
 
-COPY --from=base /opt/java-minimal /opt/java-minimal
-COPY --from=base /fuseki /fuseki
-COPY --from=base /etc/passwd /etc/passwd
+RUN apk add --no-cache curl tini
 
-# RUN export PATH="$JAVA_MINIMAL:$$PATH"
+COPY --from=build-stage /opt/java-minimal /opt/java-minimal
+COPY --from=build-stage $FUSEKI_HOME $FUSEKI_HOME
+COPY --from=build-stage /etc/passwd /etc/passwd
+COPY --from=build-stage /entrypoint.sh /entrypoint.sh
 
-WORKDIR $FUSEKI_DIR
-
-ARG LOGS=${FUSEKI_DIR}/logs
-ARG DATA=${FUSEKI_DIR}/databases
+WORKDIR $FUSEKI_HOME
 
 RUN \
-    mkdir -p $LOGS && \
-    mkdir -p $DATA && \
-    chown -R fuseki ${FUSEKI_DIR} && \
-    chmod a+x entrypoint.sh
+    echo "#!/bin/sh" > .profile && \
+    echo "alias ll='ls -l'" >> .profile && \
+    chown -R fuseki ${FUSEKI_HOME} && \
+    chmod a+x /entrypoint.sh
 
 ## Default environment variables.
 ENV \
-    JAVA_HOME=${JAVA_MINIMAL}    \
-    JAVA_OPTIONS=${JAVA_OPTIONS} \
-    JENA_VERSION=${JENA_VERSION} \
-    FUSEKI_JAR="${FUSEKI_JAR}"   \
-    FUSEKI_DIR="${FUSEKI_DIR}"
+    JAVA_HOME=${JAVA_MINIMAL}     \
+    JAVA_OPTIONS=${JAVA_OPTIONS}  \
+    JENA_VERSION=${JENA_VERSION}  \
+    FUSEKI_HOME="${FUSEKI_HOME}"  \
+    FUSEKI_BASE="${FUSEKI_BASE}"    \
+    PATH="${JAVA_MINIMAL}/bin:${FUSEKI_HOME}/bin:${PATH}"
 
 USER fuseki
 
-EXPOSE 3030
+VOLUME ${FUSEKI_BASE}
+RUN rm -rf ${FUSEKI_BASE}
 
-ENTRYPOINT ["./entrypoint.sh" ]
-CMD []
+EXPOSE 3030
+ENTRYPOINT ["/sbin/tini", "--", "/entrypoint.sh" ]
+CMD ["${FUSEKI_HOME}/fuseki-server"]
