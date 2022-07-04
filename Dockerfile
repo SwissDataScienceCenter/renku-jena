@@ -20,7 +20,7 @@
 ARG OPENJDK_VERSION=17
 ARG ALPINE_VERSION=3.15.0
 ARG JENA_VERSION="4.5.0"
-ARG JAVA_OPTIONS="-Xmx2048m -Xms2048m"
+ARG JVM_ARGS="-Xmx2048m -Xms2048m"
 
 # Internal, passed between stages.
 ARG FUSEKI_HOME=/jena-fuseki
@@ -34,7 +34,7 @@ ARG JENA_VERSION
 ARG FUSEKI_HOME
 ARG FUSEKI_BASE
 ARG JAVA_MINIMAL
-ARG JAVA_OPTIONS
+ARG JVM_ARGS
 ARG REPO=https://repo1.maven.org/maven2
 ARG FUSEKI_TAR_NAME=apache-jena-fuseki-${JENA_VERSION}
 ARG FUSEKI_TAR=${FUSEKI_TAR_NAME}.tar.gz
@@ -62,6 +62,9 @@ RUN mkdir $FUSEKI_HOME && \
 ## -- Copying shiro.ini template for securing admin endpoints
 COPY shiro.ini ${FUSEKI_HOME}/run/shiro.ini
 
+## -- Copying config.ttl with the server settings
+COPY config.ttl ${FUSEKI_HOME}/run/config.ttl
+
 ## -- Copying log4j2.properties
 COPY log4j2.properties ${FUSEKI_HOME}/run/log4j2.properties
 
@@ -79,8 +82,7 @@ COPY entrypoint.sh /
 
 # Run as this user
 # -D : no password
-
-RUN adduser -D fuseki fuseki
+#RUN adduser -D -s /bin/sh -h ${FUSEKI_HOME} fuseki fuseki
 
 ## ---- Stage: Build runtime
 FROM alpine:${ALPINE_VERSION}
@@ -90,7 +92,7 @@ ARG JENA_VERSION
 ARG FUSEKI_HOME
 ARG FUSEKI_BASE
 ARG JAVA_MINIMAL
-ARG JAVA_OPTIONS
+ARG JVM_ARGS
 
 RUN apk add --no-cache curl tini
 
@@ -99,7 +101,10 @@ COPY --from=build-stage $FUSEKI_HOME $FUSEKI_HOME
 COPY --from=build-stage /etc/passwd /etc/passwd
 COPY --from=build-stage /entrypoint.sh /entrypoint.sh
 
-WORKDIR $FUSEKI_HOME
+WORKDIR ${FUSEKI_HOME}
+
+ENV GID=1000
+RUN adduser --disabled-password -g "$GID" -D -u 1000 -s /bin/sh -h ${FUSEKI_HOME} fuseki
 
 RUN \
     echo "#!/bin/sh" > .profile && \
@@ -110,10 +115,11 @@ RUN \
 ## Default environment variables.
 ENV \
     JAVA_HOME=${JAVA_MINIMAL}     \
-    JAVA_OPTIONS=${JAVA_OPTIONS}  \
+    JVM_ARGS=${JVM_ARGS}          \
     JENA_VERSION=${JENA_VERSION}  \
     FUSEKI_HOME="${FUSEKI_HOME}"  \
-    FUSEKI_BASE="${FUSEKI_BASE}"    \
+    FUSEKI_BASE="${FUSEKI_BASE}"  \
+    DFT_LOG_CONF="${FUSEKI_BASE}/log4j2.properties" \
     PATH="${JAVA_MINIMAL}/bin:${FUSEKI_HOME}/bin:${PATH}"
 
 USER fuseki
