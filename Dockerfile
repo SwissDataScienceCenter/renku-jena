@@ -122,8 +122,8 @@ ENV \
 
 USER fuseki
 
-VOLUME ${FUSEKI_BASE}
 RUN rm -rf ${FUSEKI_BASE}
+VOLUME ${FUSEKI_BASE}
 
 EXPOSE 3030
 ENTRYPOINT ["/sbin/tini", "--", "/entrypoint.sh" ]
