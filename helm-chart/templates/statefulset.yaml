@@ -41,7 +41,7 @@ spec:
             httpGet:
               path: /$/ping
               port: jena-http
-            initialDelaySeconds: 60
+            initialDelaySeconds: 30
             periodSeconds: 30
             successThreshold: 1
             failureThreshold: 20
@@ -52,14 +52,19 @@ spec:
             failureThreshold: 30
             periodSeconds: 10
           volumeMounts:
+            {{- with .Values.additionalVolumeMounts }}
+            {{- toYaml .Values.additionalVolumeMounts | nindent 12 }}
+            {{- end }}
             - name: fuseki-base
               mountPath: {{ .Values.fusekiBase }}
-            {{- toYaml .Values.additionalVolumeMounts | nindent 12 }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
       volumes:
+        {{- with .Values.additionalVolumes }}
+        {{- toYaml .Values.additionalVolumes | nindent 8 }}
+        {{- end }}
         - name: fuseki-base
           {{- if .Values.persistence.enabled }}
           persistentVolumeClaim:
@@ -67,7 +72,6 @@ spec:
           {{- else }}
           emptyDir: {}
           {{- end }}
-        {{- toYaml .Values.additionalVolumes | nindent 8 }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       {{- with .Values.nodeSelector }}

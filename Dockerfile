@@ -117,7 +117,7 @@ ENV \
     JENA_VERSION=${JENA_VERSION}  \
     FUSEKI_HOME="${FUSEKI_HOME}"  \
     FUSEKI_BASE="${FUSEKI_BASE}"  \
-    DFT_LOG_CONF="${FUSEKI_BASE}/log4j2.properties" \
+    LOGGING="-Dlog4j.configurationFile=${FUSEKI_BASE}/log4j2.properties" \
     PATH="${JAVA_MINIMAL}/bin:${FUSEKI_HOME}/bin:${PATH}"
 
 USER fuseki
