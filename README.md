@@ -1,5 +1,5 @@
 
-This project builds [Fuseki with UI](https://jena.apache.org/documentation/fuseki2/) Docker image and a helm chart for it.
+This project builds Docker image and a helm chart for chosen version of [Fuseki with UI](https://jena.apache.org/documentation/fuseki2/).
 
 ## Building docker image
 
@@ -26,9 +26,9 @@ docker run -i --rm -p "3030:3030" -e 'FUSEKI_BASE=/fuseki' --mount type=bind,src
 ```
 
 Additionally, other files might be mounted to the server to customise certain its aspects:
-* Security: By default a simple security model is used where an `admin` user (with `admin` password) is configured. The user protects the admin endpoints only (all endpoints starting with `/$/`, except `/$/status`  and `/$/ping` which are left unprotected). A chosen security model might be used and configured in a custom `shiro.ini` file. The file has to be mounted on `${FUSEKI_BASE}/shiro.ini`. More info on how to prepare the file can be found [here](https://jena.apache.org/documentation/fuseki2/fuseki-security.html).
-* Logging: By default all server log statements of severity `INFO` and higher will be logged to the console. The standard rules can be changed in a custom file and mounted on `${FUSEKI_BASE}/log4j2.properties`. More can be found [here](https://jena.apache.org/documentation/fuseki2/fuseki-logging.html).
-* Server properties: default Fuseki server properties are stored in the `${FUSEKI_BASE}/config.ttl` file. A custom file can be prepared and mounted to replace the defaults.
+* **Security:** By default a simple security model is used where an `admin` user (with `admin` password) is configured. The user protects the admin endpoints only (all endpoints starting with `/$/`, except `/$/status`  and `/$/ping` which are left unprotected). A chosen security model might be used and configured in a custom `shiro.ini` file. The file has to be mounted on `${FUSEKI_BASE}/shiro.ini`. More info on how to prepare the file can be found [here](https://jena.apache.org/documentation/fuseki2/fuseki-security.html).
+* **Logging:** By default all server log statements of severity `INFO` and higher will be logged to the console. The standard rules can be changed in a custom file and mounted on `${FUSEKI_BASE}/log4j2.properties`. More can be found [here](https://jena.apache.org/documentation/fuseki2/fuseki-logging.html).
+* **Server properties:** default Fuseki server properties are stored in the `${FUSEKI_BASE}/config.ttl` file. A custom file can be prepared and mounted to replace the defaults.
 
 ## Configuring Helm chart
 
@@ -108,4 +108,4 @@ New datasets can be added in the following ways:
 curl -X POST -d @custom-ds.ttl -H 'Content-Type: text/turtle' http://fuseki-host/$/datasets
 ```
 
-*NOTICE:* the security model configured in the `shiro.ini` file will be used for the newly created datasets.
+**NOTICE:** the security model configured in the `shiro.ini` file will be used for the newly created datasets.
