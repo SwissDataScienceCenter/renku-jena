@@ -8,7 +8,7 @@ image:
   repository: jachro/renku-jena
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: '0.0.1-n006.hb2a888f'
+  tag: '0.0.1'
 
 imagePullSecrets: []
 nameOverride: ""
