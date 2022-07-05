@@ -1,15 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "renku-jena.fullname" . }}
+  name: {{ include "renku-jena.fullname" . }}-headless
   labels:
     {{- include "renku-jena.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
+  clusterIP: None
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: http
+      targetPort: jena-http
       protocol: TCP
-      name: http
+      name: jena-http
   selector:
     {{- include "renku-jena.selectorLabels" . | nindent 4 }}
+    role: master

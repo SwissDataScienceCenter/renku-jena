@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "renku-jena.fullname" . }}-master
+  labels:
+    {{- include "renku-jena.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  serviceName: {{ include "renku-jena.fullname" . }}-headless
+  selector:
+    matchLabels:
+      {{- include "renku-jena.selectorLabels" . | nindent 6 }}
+      role: master
+  template:
+    metadata:
+      labels:
+        {{- include "renku-jena.selectorLabels" . | nindent 8 }}
+        role: master
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            {{- toYaml .Values.environmentVariables | nindent 12 }}
+            - name: FUSEKI_BASE
+              value: {{ .Values.fusekiBase }}
+          ports:
+            - name: jena-http
+              containerPort: 3030
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /$/ping
+              port: jena-http
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /$/ping
+              port: jena-http
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 20
+          startupProbe:
+            httpGet:
+              path: /$/ping
+              port: jena-http
+            failureThreshold: 30
+            periodSeconds: 10
+          volumeMounts:
+            - name: fuseki-base
+              mountPath: {{ .Values.fusekiBase }}
+            {{- toYaml .Values.additionalVolumeMounts | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+      volumes:
+        - name: fuseki-base
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default (include "renku-jena.fullname" .) }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        {{- toYaml .Values.additionalVolumes | nindent 8 }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{ toYaml . | indent 8 }}
+      {{- end }}

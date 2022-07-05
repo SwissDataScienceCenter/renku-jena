@@ -80,10 +80,6 @@ RUN \
 ## -- Copying entrypoint.sh
 COPY entrypoint.sh /
 
-# Run as this user
-# -D : no password
-#RUN adduser -D -s /bin/sh -h ${FUSEKI_HOME} fuseki fuseki
-
 ## ---- Stage: Build runtime
 FROM alpine:${ALPINE_VERSION}
 
@@ -103,6 +99,8 @@ COPY --from=build-stage /entrypoint.sh /entrypoint.sh
 
 WORKDIR ${FUSEKI_HOME}
 
+# Creating 'fuseki' system user to be used for starting the service
+# -D : no password
 ENV GID=1000
 RUN adduser --disabled-password -g "$GID" -D -u 1000 -s /bin/sh -h ${FUSEKI_HOME} fuseki
 

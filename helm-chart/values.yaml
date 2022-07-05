@@ -8,25 +8,30 @@ image:
   repository: jachro/renku-jena
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "0.0.1-n005.hade9045"
+  tag: '0.0.1-n006.hb2a888f'
 
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
-serviceAccount:
-  # Specifies whether a service account should be created
-  create: true
-  # Annotations to add to the service account
-  annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
+persistence:
+  enabled: true
+
+  ## A manually managed Persistent Volume and Claim
+  ## Requires persistence.enabled: true
+  ## If defined, PVC must be created manually before volume will be bound
+  # existingClaim:
+
+  # storageClass: "-"
+  accessMode: ReadWriteOnce
+
+  # size of the persistence volume, e.g. 1Gi
+  size: 1Gi
 
 podAnnotations: {}
 
-podSecurityContext: {}
-  # fsGroup: 2000
+podSecurityContext:
+  fsGroup: 1000
 
 securityContext: {}
   # capabilities:
@@ -38,7 +43,7 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 80
+  port: 3030
 
 ingress:
   enabled: false
@@ -56,7 +61,7 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-resources: {}
+resources:
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -64,9 +69,30 @@ resources: {}
   # limits:
   #   cpu: 100m
   #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+  requests:
+    cpu: 500m
+    memory: 3Gi
+
+# JVM arguments to be used on server start-up command
+environmentVariables:
+  - name: JVM_ARGS
+    value: -Xmx2048m -Xms2048m
+
+# Mounting point for the $FUSEKI_BASE folder (where configuration and data is kept)
+fusekiBase: /fuseki
+
+# Additional container volume mounts, e.g.
+#  - name: shiro-config
+#    mountPath: /fuseki/shiro.ini
+#    subPath: shiro.ini
+#    readOnly: true
+additionalVolumeMounts: []
+
+# Additional POD volumes, e.g.
+#  - name: shiro-config
+#    secret:
+#      secretName: jena-shiro-ini
+additionalVolumes: []
 
 autoscaling:
   enabled: false
