@@ -76,7 +76,7 @@ resources:
 # JVM arguments to be used on server start-up command
 environmentVariables:
   - name: JVM_ARGS
-    value: -Xmx2048m -Xms2048m
+    value: -Xmx2G -Xms2G
 
 # Mounting point for the $FUSEKI_BASE folder (where configuration and data is kept)
 fusekiBase: /fuseki
