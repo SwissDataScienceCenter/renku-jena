@@ -2,13 +2,11 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
-
 image:
   repository: renku/renku-jena
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: '0.0.2'
+  tag: '0.0.5'
 
 imagePullSecrets: []
 nameOverride: ""
@@ -22,24 +20,31 @@ persistence:
   ## If defined, PVC must be created manually before volume will be bound
   # existingClaim:
 
-  # storageClass: "-"
+  storageClass: ""
   accessMode: ReadWriteOnce
 
   # size of the persistence volume, e.g. 1Gi
   size: 1Gi
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
 
 podAnnotations: {}
 
 podSecurityContext:
   fsGroup: 1000
 
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  allowPrivilegeEscalation: false
 
 service:
   type: ClusterIP
@@ -66,17 +71,14 @@ resources:
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  requests:
-    cpu: 500m
-    memory: 3Gi
+  # requests:
+  #   cpu: 500m
+  #   memory: 3Gi
 
+additionalEnvironmentVariables: []
 # JVM arguments to be used on server start-up command
-environmentVariables:
-  - name: JVM_ARGS
-    value: -Xmx2G -Xms2G
+#  - name: JVM_ARGS
+#    value: -Xmx2G -Xms2G
 
 # Mounting point for the $FUSEKI_BASE folder (where configuration and data is kept)
 fusekiBase: /fuseki

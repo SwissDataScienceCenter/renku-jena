@@ -16,8 +16,8 @@ docker build --force-rm --build-arg JENA_VERSION=4.5.0 -t fuseki
 ## Running docker image
 
 There are certain environment variables that might be set before running the image:
-* `FUSEKI_BASE` - a folder where all the configurations and data are kept. By default it's set to `/fuseki`. It's mandatory to mount some volume which `FUSEKI_BASE` points to. The `fuseki` user has to have write privileges on that folder. The folder should be a persistent volume, otherwise, all the data and the configuration will be lost on the server shutdown.
 * `JVM_ARGS` - environment variable with all additional JVM ARGs needed for the server to operate correctly. The default value is: `-Xmx2048m -Xms2048m`.
+* `FUSEKI_BASE` - a folder where all the configurations and data are kept. By default it's set to `/fuseki`. It's mandatory to mount some volume which `FUSEKI_BASE` points to. The `fuseki` user has to have write privileges on that folder. The folder should be a persistent volume, otherwise, all the data and the configuration will be lost on the server shutdown. It's recommended not to change the value for `FUSEKI_BASE` but simply mount a volume to `fuseki`.
 
 An example `docker run` command starting Fuseki server may look like follows:
 
@@ -34,10 +34,10 @@ Additionally, other files might be mounted to the server to customise certain it
 
 There's a set of values that have to be configured in order to make Fuseki working as intended:
 * `persistence.size` - size of the persistence volume; defaulted to 1Gi;
-* `environmentVariables.JVM_ARGS` - flags to be passed to the JVM in the server startup command; defaulted to '-Xmx2048m -Xms2048m'
-* `requests.memory` - amount of memory requested for the container; should be higher than 'Xmx' if set on `environmentVariables.JVM_ARGS`;
+* `additionalEnvironmentVariables.JVM_ARGS` - flags to be passed to the JVM in the server startup command; it's common to pass some memory related settings to JVM, e.g. `-Xmx2048m -Xms2048m`.
+* `requests.memory` - amount of memory requested for the container; should be higher than 'Xmx' if set on `additionalEnvironmentVariables.JVM_ARGS`;
 
-By default, the chart creates a Persistent Volume and mounts it at `$FUSEKI_BASE`. This folder is used by Fuseki for storing both the configuration and the data. It's crucial for `$FUSEKI_BASE` to be on a persistent volume, otherwise the configuration and the data will be lost on server shutdown.
+By default, the chart creates a Persistent Volume and mounts it at `$FUSEKI_BASE`. This folder is used by Fuseki for storing both the configuration and the data. It's crucial for `$FUSEKI_BASE` to be on a persistent volume, otherwise the configuration and the data will be lost on server shutdown. As mentioned above, it's recommended not to modify the mounting point but simply mount a volume to `/fuseki`.
 
 There might be other files that had to be customised in order to achieve certain behaviour of Fuseki server. These files should be listed under `additionalVolumeMounts` and `additionalVolumes` in the `values.yaml` file. The most common customisations are:
 * `shiro.ini` - definition of security aspects of the Fuseki server. In-dept info can be found [here](https://jena.apache.org/documentation/fuseki2/fuseki-security.html). As mentioned above, the default file specifies `admin` user (with `admin` password) that protects admin endpoints (starting with `/$/`) except `/$/status`  and `/$/ping`.
