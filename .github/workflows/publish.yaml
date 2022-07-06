@@ -26,7 +26,11 @@ jobs:
       - uses: actions/checkout@v3
       - name: Lint chart
         uses: hiberbee/github-action-helm@latest
+        with:
+          helm: repo list
+      - name: Lint chart
         run: helm lint helm-chart/renku-jena
+        working-directory: .
       - name: Set environment variables
         run: |
           echo "GIT_USER=Renku Bot" >> $GITHUB_ENV
