@@ -40,7 +40,7 @@ There's a set of values that have to be configured in order to make Fuseki worki
 By default, the chart creates a Persistent Volume and mounts it at `$FUSEKI_BASE`. This folder is used by Fuseki for storing both the configuration and the data. It's crucial for `$FUSEKI_BASE` to be on a persistent volume, otherwise the configuration and the data will be lost on server shutdown. As mentioned above, it's recommended not to modify the mounting point but simply mount a volume to `/fuseki`.
 
 There might be other files that had to be customised in order to achieve certain behaviour of Fuseki server. These files should be listed under `additionalVolumeMounts` and `additionalVolumes` in the `values.yaml` file. The most common customisations are:
-* `shiro.ini` - definition of security aspects of the Fuseki server. In-dept info can be found [here](https://jena.apache.org/documentation/fuseki2/fuseki-security.html). As mentioned above, the default file specifies `admin` user (with `admin` password) that protects admin endpoints (starting with `/$/`) except `/$/status`  and `/$/ping`.
+* `shiro.ini` - definition of security aspects of the Fuseki server. In-depth info can be found [here](https://jena.apache.org/documentation/fuseki2/fuseki-security.html). As mentioned above, the default file specifies `admin` user (with `admin` password) that protects admin endpoints (starting with `/$/`) except `/$/status`  and `/$/ping`.
 * `log4j2.properties` - logging settings; more info is available on the [Fuseki page](https://jena.apache.org/documentation/fuseki2/fuseki-logging.html)
 
 An example configuration of a volume mount (for `shiro.ini` file specifically) may be done this way:
