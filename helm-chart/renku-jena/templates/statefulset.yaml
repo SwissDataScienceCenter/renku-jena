@@ -13,16 +13,22 @@ spec:
       role: master
   template:
     metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       labels:
         {{- include "renku-jena.selectorLabels" . | nindent 8 }}
         role: master
     spec:
       containers:
         - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            {{- toYaml .Values.environmentVariables | nindent 12 }}
+            {{- with .Values.additionalEnvironmentVariables }}
+            {{- toYaml .Values.additionalEnvironmentVariables | nindent 12 }}
+            {{- end }}
             - name: FUSEKI_BASE
               value: {{ .Values.fusekiBase }}
           ports:
@@ -85,4 +91,8 @@ spec:
       {{- with .Values.tolerations }}
       tolerations:
         {{ toYaml . | indent 8 }}
+      {{- end }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
       {{- end }}

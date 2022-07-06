@@ -24,12 +24,16 @@ jobs:
       HELM_TGZ: helm-v2.17.0-linux-amd64.tar.gz
     steps:
       - uses: actions/checkout@v3
+      - name: Lint chart
+        uses: hiberbee/github-action-helm@1.5.0
+        with:
+          helm: lint helm-chart/renku-jena
       - name: Set environment variables
         run: |
           echo "GIT_USER=Renku Bot" >> $GITHUB_ENV
           echo "GIT_EMAIL=renku@datascience.ch" >> $GITHUB_ENV
       - name: Build and push chart and images
-        uses: SwissDataScienceCenter/renku-actions/publish-chart@v0.5.2
+        uses: SwissDataScienceCenter/renku-actions/publish-chart@v0.5.3
         env:
           CHART_PATH: helm-chart/renku-jena
           CHART_NAME: renku-jena
