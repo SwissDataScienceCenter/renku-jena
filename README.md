@@ -10,7 +10,7 @@ The Docker image building process takes the following arguments:
 
 To build the Docker image manually the following command can be used:
 ```
-docker build --force-rm --build-arg JENA_VERSION=4.5.0 -t fuseki
+docker build --force-rm --build-arg JENA_VERSION=4.5.0 -t fuseki .
 ```
 
 ## Running docker image

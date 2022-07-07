@@ -107,6 +107,9 @@ RUN adduser --disabled-password -g "$GID" -D -u 1000 -s /bin/sh -h ${FUSEKI_HOME
 RUN \
     echo "#!/bin/sh" > .profile && \
     echo "alias ll='ls -l'" >> .profile && \
+    mkdir ${FUSEKI_BASE} && \
+    chown -R fuseki ${FUSEKI_BASE} && \
+    chmod a+w ${FUSEKI_BASE} && \
     chown -R fuseki ${FUSEKI_HOME} && \
     chmod a+x /entrypoint.sh
 
@@ -122,7 +125,7 @@ ENV \
 
 USER fuseki
 
-RUN rm -rf ${FUSEKI_BASE}
+RUN rm -rf ${FUSEKI_BASE}/*
 VOLUME ${FUSEKI_BASE}
 
 EXPOSE 3030
