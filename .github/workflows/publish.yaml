@@ -19,7 +19,7 @@ jobs:
     env:
       GIT_USER: Renku Bot
       GIT_EMAIL: renku@datascience.ch
-      TAG: ${{ github.head_ref }}
+      CHART_TAG: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v3
       - name: Lint chart
@@ -43,4 +43,4 @@ jobs:
           git config --global user.name "$GIT_USER"
           git config --global --add safe.directory /github/workspace
           echo ${{ secrets.RENKU_DOCKER_PASSWORD }} | docker login -u ${{ secrets.RENKU_DOCKER_USERNAME }} --password-stdin
-          chartpress --push --publish-chart --tag $TAG --image-prefix renku/ --builder docker-buildx --platform linux/amd64 --platform linux/arm64
+          chartpress --push --publish-chart --tag "$CHART_TAG" --image-prefix renku/ --builder docker-buildx --platform linux/amd64 --platform linux/arm64
