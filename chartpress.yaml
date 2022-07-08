@@ -1,5 +1,5 @@
 charts:
-  - name: helm-chart/renku-jena
+  - name: renku-jena
     resetTag: latest
     imagePrefix: renku/
     repo:
