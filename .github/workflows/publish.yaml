@@ -20,8 +20,9 @@ jobs:
       GIT_USER: Renku Bot
       GIT_EMAIL: renku@datascience.ch
       GITHUB_TOKEN: ${{ secrets.RENKUBOT_GITHUB_TOKEN }}
-      # CHART_TAG: ${{ github.ref_name }}
+      CHART_NAME: renku-graph
       CHART_TAG: 0.0.8
+      # CHART_TAG: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v3
       - name: Lint chart
