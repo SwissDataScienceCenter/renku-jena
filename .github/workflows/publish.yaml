@@ -28,7 +28,7 @@ jobs:
       - name: Lint chart
         uses: WyriHaximus/github-action-helm3@v2
         with:
-          exec: helm lint ./helm-chart/renku-jena/
+          exec: helm lint ./renku-jena/
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
