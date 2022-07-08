@@ -13,7 +13,11 @@ To build the Docker image manually the following command can be used:
 docker build --force-rm --build-arg JENA_VERSION=4.5.0 -t fuseki .
 ```
 
+It's possible to build the image for `linux/amd64` and `linux/arm64` platforms.
+
 ## Running docker image
+
+There are images built for `linux/amd64` and `linux/arm64` available on dockerhub. For available versions check [renku/renku-jena page](https://hub.docker.com/r/renku/renku-jena/tags).
 
 There are certain environment variables that might be set before running the image:
 * `JVM_ARGS` - environment variable with all additional JVM ARGs needed for the server to operate correctly. The default value is: `-Xmx2048m -Xms2048m`.
