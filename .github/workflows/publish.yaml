@@ -19,6 +19,7 @@ jobs:
     env:
       GIT_USER: Renku Bot
       GIT_EMAIL: renku@datascience.ch
+      GITHUB_TOKEN: ${{ secrets.RENKUBOT_GITHUB_TOKEN }}
       # CHART_TAG: ${{ github.ref_name }}
       CHART_TAG: 0.0.8
     steps:
