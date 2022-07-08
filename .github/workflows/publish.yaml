@@ -19,7 +19,8 @@ jobs:
     env:
       GIT_USER: Renku Bot
       GIT_EMAIL: renku@datascience.ch
-      CHART_TAG: ${{ github.ref_name }}
+      # CHART_TAG: ${{ github.ref_name }}
+      CHART_TAG: 0.0.8
     steps:
       - uses: actions/checkout@v3
       - name: Lint chart
