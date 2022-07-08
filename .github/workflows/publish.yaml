@@ -42,4 +42,4 @@ jobs:
           git config --global user.name "$GIT_USER"
           git config --global --add safe.directory /github/workspace
           echo ${{ secrets.RENKU_DOCKER_PASSWORD }} | docker login -u ${{ secrets.RENKU_DOCKER_USERNAME }} --password-stdin
-          chartpress --image-prefix renku/ --push --builder docker-buildx --platform linux/amd64 --platform linux/arm64
+          chartpress --push --publish-chart --tag ${{ github.head_ref }} --image-prefix renku/ --builder docker-buildx --platform linux/amd64 --platform linux/arm64
