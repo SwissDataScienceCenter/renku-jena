@@ -113,3 +113,11 @@ curl -X POST -d @custom-ds.ttl -H 'Content-Type: text/turtle' http://fuseki-host
 ```
 
 **NOTICE:** the security model configured in the `shiro.ini` file will be used for the newly created datasets.
+
+## Releasing
+
+In order to release a new version of both the Docker image and the chart, the following steps needs to be done:
+* update the `version` property in the `renku-jena/Chart.yaml` with a correct value;
+* update the `image.tag` property in the `renku-jena/values.yaml` with a correct value;
+* update the `JENA_VERSION` build argument in the `chartpress.yaml` with the relevant version of Jena;
+* publish a new release in GitHub.
