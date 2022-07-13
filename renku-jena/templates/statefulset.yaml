@@ -21,6 +21,20 @@ spec:
         {{- include "renku-jena.selectorLabels" . | nindent 8 }}
         role: master
     spec:
+      {{- if not .Values.persistence.enabled }}
+      initContainers:
+        - image: busybox:1.34
+          imagePullPolicy: IfNotPresent
+          name: adjust-permissions-for-emptydir
+          volumeMounts:
+            - name: fuseki-base
+              mountPath: {{ .Values.fusekiBase }}
+          command:
+            - sh
+            - -c
+          args:
+            - chmod g+w {{ .Values.fusekiBase }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"

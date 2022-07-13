@@ -124,7 +124,9 @@ ENV \
 
 USER fuseki
 
-RUN rm -rf ${FUSEKI_BASE}/*
+RUN \
+    rm -rf ${FUSEKI_BASE}/configuration/* && \
+    rm -rf ${FUSEKI_BASE}/databases/*
 VOLUME ${FUSEKI_BASE}
 
 EXPOSE 3030
