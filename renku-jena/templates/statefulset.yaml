@@ -23,7 +23,7 @@ spec:
     spec:
       {{- if not .Values.persistence.enabled }}
       initContainers:
-        - image: busybox:1.34
+        - image: alpine:3.15.0
           imagePullPolicy: IfNotPresent
           name: adjust-permissions-for-emptydir
           volumeMounts:
@@ -32,8 +32,7 @@ spec:
           command:
             - sh
             - -c
-          args:
-            - chmod g+w {{ .Values.fusekiBase }}
+            - adduser --disabled-password -g 1000 -D -u 1000 fuseki && echo fuseki user created && chown -R fuseki {{ .Values.fusekiBase }} && echo ownership of '{{ .Values.fusekiBase }}' changed
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
