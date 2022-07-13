@@ -60,3 +60,20 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Return the proper Storage Class
+{{ include "renku-jena.storage.class" ( dict "persistence" .Values.persistence) }}
+*/}}
+{{- define "renku-jena.storage.class" -}}
+
+{{- $storageClass := .persistence.storageClass -}}
+{{- if $storageClass -}}
+  {{- if (eq "-" $storageClass) -}}
+      {{- printf "storageClassName: \"\"" -}}
+  {{- else }}
+      {{- printf "storageClassName: %s" $storageClass -}}
+  {{- end -}}
+{{- end -}}
+
+{{- end -}}

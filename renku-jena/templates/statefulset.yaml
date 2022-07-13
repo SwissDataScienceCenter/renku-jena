@@ -67,17 +67,6 @@ spec:
             {{- toYaml .Values.resources | nindent 12 }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-      volumes:
-        {{- with .Values.additionalVolumes }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
-        - name: fuseki-base
-          {{- if .Values.persistence.enabled }}
-          persistentVolumeClaim:
-            claimName: {{ .Values.persistence.existingClaim | default (include "renku-jena.fullname" .) }}
-          {{- else }}
-          emptyDir: {}
-          {{- end }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       {{- with .Values.nodeSelector }}
@@ -96,3 +85,28 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+        {{- with .Values.additionalVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if and .Values.persistence.enabled .Values.persistence.existingClaim }}
+        - name: fuseki-base
+          persistentVolumeClaim:
+            claimName: {{ tpl .Values.persistence.existingClaim $ }}
+        {{- else if not .Values.persistence.enabled }}
+        - name: fuseki-base
+          emptyDir: {}
+        {{- else }}
+  volumeClaimTemplates:
+    - metadata:
+        name: fuseki-base
+      spec:
+        accessModes:
+        {{- range .Values.persistence.accessModes }}
+          - {{ . | quote }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size | quote }}
+        {{- include "renku-jena.storage.class" (dict "persistence" .Values.persistence) | nindent 8 }}
+        {{- end }}

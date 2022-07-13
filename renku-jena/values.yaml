@@ -6,7 +6,7 @@ image:
   repository: renku/renku-jena
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: '0.0.9'
+  tag: '0.0.10'
 
 imagePullSecrets: []
 nameOverride: ""
@@ -17,14 +17,13 @@ persistence:
 
   ## A manually managed Persistent Volume and Claim
   ## Requires persistence.enabled: true
+
   ## If defined, PVC must be created manually before volume will be bound
   # existingClaim:
 
-  storageClass: ""
-  accessMode: ReadWriteOnce
+  # storageClass: leave undefined to use default, otherwise specify required class
 
-  # size of the persistence volume, e.g. 1Gi
-  size: 1Gi
+  # size: of the persistence volume, e.g. 1Gi
 
 serviceAccount:
   # Specifies whether a service account should be created
