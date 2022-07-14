@@ -54,22 +54,22 @@ spec:
               port: jena-http
             periodSeconds: 10
             successThreshold: 1
-            failureThreshold: 10
-            timeoutSeconds: 5
+            failureThreshold: 30
+            timeoutSeconds: 60
           readinessProbe:
             httpGet:
               path: /$/ping
               port: jena-http
-            initialDelaySeconds: 30
-            periodSeconds: 30
+            initialDelaySeconds: 10
+            periodSeconds: 10
             successThreshold: 1
-            failureThreshold: 20
+            failureThreshold: 60
           startupProbe:
             httpGet:
               path: /$/ping
               port: jena-http
-            failureThreshold: 30
-            periodSeconds: 10
+            failureThreshold: 60
+            periodSeconds: 5
           volumeMounts:
             {{- with .Values.additionalVolumeMounts }}
             {{- toYaml . | nindent 12 }}
