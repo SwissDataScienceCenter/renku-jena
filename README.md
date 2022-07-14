@@ -105,12 +105,12 @@ All of the mentioned mounts are optional and chart provides defaults for them (l
 Initially, the server starts with no datasets, except from the cases when there are datasets configured and created in the mounted `${FUSEKI_BASE}/configuration` and `${FUSEKI_BASE}/databases` folders. In such a case, the existing datasets will be served by the server straight after the start-up.
 
 New datasets can be added in the following ways:
+* through the admin API by POSTing a ttl config file (preferred way):
+  ```
+  curl -X POST -d @custom-ds.ttl -H 'Content-Type: text/turtle' http://fuseki-host/$/datasets
+  ```
 * through the Fuseki UI Console;
 * through new ttl configuration file added to `${FUSEKI_BASE}/configuration` folder (server restart is needed to pick up the new configs);
-* through the admin API by POSTing a ttl config file:
-```
-curl -X POST -d @custom-ds.ttl -H 'Content-Type: text/turtle' http://fuseki-host/$/datasets
-```
 
 **NOTICE:** the security model configured in the `shiro.ini` file will be used for the newly created datasets.
 

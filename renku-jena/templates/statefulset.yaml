@@ -21,19 +21,19 @@ spec:
         {{- include "renku-jena.selectorLabels" . | nindent 8 }}
         role: master
     spec:
-      {{- if not .Values.persistence.enabled }}
       initContainers:
-        - image: alpine:3.15.0
+        - image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: IfNotPresent
-          name: adjust-permissions-for-emptydir
+          name: prepare-fuseki-base-dir
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
           volumeMounts:
             - name: fuseki-base
               mountPath: {{ .Values.fusekiBase }}
           command:
             - sh
             - -c
-            - adduser --disabled-password -g 1000 -D -u 1000 fuseki && echo fuseki user created && chown -R fuseki {{ .Values.fusekiBase }} && echo ownership of '{{ .Values.fusekiBase }}' changed
-      {{- end }}
+            - mkdir -p {{ .Values.fusekiBase }}/configuration && echo '{{ .Values.fusekiBase }}/configuration' folder prepared
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
