@@ -6,7 +6,7 @@ image:
   repository: renku/renku-jena
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: '0.0.14'
+  tag: '0.0.15'
 
 imagePullSecrets: []
 nameOverride: ""
@@ -94,6 +94,14 @@ additionalVolumeMounts: []
 #    secret:
 #      secretName: jena-shiro-ini
 additionalVolumes: []
+
+# At times there might be a need of adding a custom script
+# to be executed just before Fuseki starts up.
+# An example might be a situation when the environment ensures the Persistent Volume
+# is mounted to a single Fuseki instance
+# and there's a need of automatic removal of `tdb.lock` file(s) after Fuseki crash.
+# The script must be a single line command.
+additionalInitContainerScript:
 
 nodeSelector: {}
 
