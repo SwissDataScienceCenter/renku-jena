@@ -108,3 +108,6 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+test:
+  enabled: true
