@@ -18,7 +18,7 @@
 ## This Dockefile builds a reduced footprint container.
 
 ARG ALPINE_VERSION=3.15.0
-ARG JENA_VERSION="4.5.0"
+ARG JENA_VERSION="4.6.0"
 ARG JVM_ARGS="-Xmx2048m -Xms2048m"
 
 # Internal, passed between stages.
@@ -43,7 +43,7 @@ RUN [ "${JENA_VERSION}" != "" ] || { echo -e '\n**** Set JENA_VERSION ****\n' ; 
 RUN echo && echo "==== Docker build for Apache Jena Fuseki ${JENA_VERSION} ====" && echo
 
 # Alpine: For objcopy used in jlink
-RUN apk add --no-cache curl tar openjdk17 binutils 
+RUN apk add --no-cache curl tar openjdk17 binutils
 
 ## -- Fuseki binaries in FUSEKI_HOME.
 WORKDIR /tmp
