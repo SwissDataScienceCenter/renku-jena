@@ -4,13 +4,13 @@ This project builds Docker image and a helm chart for chosen version of [Fuseki 
 ## Building docker image
 
 The Docker image building process takes the following arguments:
-`JENA_VERSION` defaulted to `4.6.0`
+`JENA_VERSION` defaulted to `4.6.1`
 `OPENJDK_VERSION` defaulted to `17`
 `ALPINE_VERSION` defaulted to `3.15.0`
 
 To build the Docker image manually the following command can be used:
 ```
-docker build --force-rm --build-arg JENA_VERSION=4.6.0 -t fuseki .
+docker build --force-rm --build-arg JENA_VERSION=4.6.1 -t fuseki .
 ```
 
 It's possible to build the image for `linux/amd64` and `linux/arm64` platforms.
