@@ -17,8 +17,8 @@
 
 ## This Dockefile builds a reduced footprint container.
 
-ARG ALPINE_VERSION=3.15.0
-ARG JENA_VERSION="4.7.0"
+ARG ALPINE_VERSION=3.17.3
+ARG JENA_VERSION="4.8.0"
 ARG JVM_ARGS="-Xmx2048m -Xms2048m"
 
 # Internal, passed between stages.
