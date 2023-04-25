@@ -13,4 +13,4 @@ charts:
         dockerfilePath: Dockerfile
         valuesPath: image
         buildArgs:
-          JENA_VERSION: "4.7.0"
+          JENA_VERSION: "4.8.0"
