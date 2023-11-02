@@ -17,8 +17,9 @@
 
 ## This Dockefile builds a reduced footprint container.
 
-ARG ALPINE_VERSION=3.18.2
-ARG JENA_VERSION="4.9.0"
+ARG ALPINE_VERSION=3.18.4
+ARG JDK_VERSION=21.0.1_12
+ARG JENA_VERSION="4.10.0"
 ARG JVM_ARGS="-Xmx2048m -Xms2048m"
 
 # Internal, passed between stages.
@@ -27,7 +28,7 @@ ARG FUSEKI_BASE=/fuseki
 ARG JAVA_MINIMAL=/opt/java-minimal
 
 ## ---- Stage: Download and build java.
-FROM alpine:${ALPINE_VERSION} AS build-stage
+FROM eclipse-temurin:${JDK_VERSION}-jdk-alpine AS build-stage
 
 ARG JENA_VERSION
 ARG FUSEKI_HOME
@@ -43,7 +44,7 @@ RUN [ "${JENA_VERSION}" != "" ] || { echo -e '\n**** Set JENA_VERSION ****\n' ; 
 RUN echo && echo "==== Docker build for Apache Jena Fuseki ${JENA_VERSION} ====" && echo
 
 # Alpine: For objcopy used in jlink
-RUN apk add --no-cache curl tar openjdk17 binutils
+RUN apk add --no-cache curl tar binutils
 
 ## -- Fuseki binaries in FUSEKI_HOME.
 WORKDIR /tmp
