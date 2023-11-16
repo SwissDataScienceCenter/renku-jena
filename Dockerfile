@@ -77,6 +77,15 @@ RUN \
         --output "${JAVA_MINIMAL}" \
         --add-modules "${JDEPS},${JDEPS_EXTRA}"
 
+COPY /compactor/compactor.sc /compactor/
+
+RUN \
+  apk add --no-cache wget coreutils && \
+  wget -q -O scala-cli.gz https://github.com/Virtuslab/scala-cli/releases/latest/download/scala-cli-x86_64-pc-linux-static.gz && gunzip scala-cli.gz && \
+  chmod +x scala-cli && \
+  mv scala-cli /usr/bin/ && \
+  scala-cli --power package /compactor/compactor.sc -o /compactor/compact-jena --assembly
+
 ## -- Copying entrypoint.sh
 COPY entrypoint.sh /
 
@@ -90,12 +99,13 @@ ARG FUSEKI_BASE
 ARG JAVA_MINIMAL
 ARG JVM_ARGS
 
-RUN apk add --no-cache curl tini
+RUN apk add --no-cache curl tini bash
 
 COPY --from=build-stage /opt/java-minimal /opt/java-minimal
 COPY --from=build-stage $FUSEKI_HOME $FUSEKI_HOME
 COPY --from=build-stage /etc/passwd /etc/passwd
 COPY --from=build-stage /entrypoint.sh /entrypoint.sh
+COPY --from=build-stage /compactor/compact-jena /usr/bin/compact-jena
 
 WORKDIR ${FUSEKI_HOME}
 
