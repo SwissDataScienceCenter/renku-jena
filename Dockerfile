@@ -78,14 +78,14 @@ RUN \
         --add-modules "${JDEPS},${JDEPS_EXTRA}"
 
 COPY /compactor/src/*.scala /compactor/src/
-COPY /compactor/compactor.sc /compactor/
+COPY /compactor/Compactor.scala /compactor/
 
 RUN \
   apk add --no-cache wget coreutils && \
   wget -q -O scala-cli.gz https://github.com/Virtuslab/scala-cli/releases/latest/download/scala-cli-x86_64-pc-linux-static.gz && gunzip scala-cli.gz && \
   chmod +x scala-cli && \
   mv scala-cli /usr/bin/ && \
-  scala-cli --power package /compactor/src /compactor/compactor.sc -o /compactor/compact-jena --assembly
+  scala-cli --power package /compactor/src /compactor/Compactor.scala -o /compactor/compact-jena --assembly
 
 ## -- Copying entrypoint.sh
 COPY entrypoint.sh /
