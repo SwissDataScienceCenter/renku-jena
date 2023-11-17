@@ -1,6 +1,10 @@
 import cats.syntax.all.*
+import org.http4s.headers.Authorization
+import org.http4s.implicits.*
+import org.http4s.{BasicCredentials, Uri}
 
-final case class Admin(username: String, password: String)
+final case class Admin(username: String, password: String):
+  lazy val asAuthHeader = Authorization(BasicCredentials(username, password))
 
 object Admin:
 
@@ -11,10 +15,11 @@ object Admin:
     (sys.env.get(adminUserEnv) -> sys.env.get(adminPassEnv))
       .mapN(Admin.apply)
 
-
-final case class Config(admin: Admin)
+final case class Config(adminApi: Uri, admin: Admin)
 
 object Config:
-  def fromConfig: Option[Config] =
-    Admin.fromConfig.map(Config(_))
 
+  val adminUri = uri"http://localhost:3030/$$"
+
+  def fromConfig: Option[Config] =
+    Admin.fromConfig.map(Config(adminUri, _))
