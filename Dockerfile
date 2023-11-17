@@ -77,6 +77,7 @@ RUN \
         --output "${JAVA_MINIMAL}" \
         --add-modules "${JDEPS},${JDEPS_EXTRA}"
 
+COPY /compactor/src/*.scala /compactor/src/
 COPY /compactor/compactor.sc /compactor/
 
 RUN \
@@ -84,7 +85,7 @@ RUN \
   wget -q -O scala-cli.gz https://github.com/Virtuslab/scala-cli/releases/latest/download/scala-cli-x86_64-pc-linux-static.gz && gunzip scala-cli.gz && \
   chmod +x scala-cli && \
   mv scala-cli /usr/bin/ && \
-  scala-cli --power package /compactor/compactor.sc -o /compactor/compact-jena --assembly
+  scala-cli --power package /compactor/src /compactor/compactor.sc -o /compactor/compact-jena --assembly
 
 ## -- Copying entrypoint.sh
 COPY entrypoint.sh /
