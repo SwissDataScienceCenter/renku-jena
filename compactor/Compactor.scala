@@ -7,6 +7,7 @@
 //> using resourceDir src
 
 import cats.effect.{ExitCode, IO, IOApp}
+import cats.syntax.all.*
 
 object Compactor extends IOApp:
 
@@ -14,7 +15,17 @@ object Compactor extends IOApp:
     Config.fromConfig
       .map { config =>
         given Config = config
-        DatasetsFinder.findDatasets.flatMap(r => IO.println(s"Compacting done $r"))
+        for {
+          datasets <- DatasetsFinder.findDatasets
+          _        <- datasets.map(compact).sequence
+          _        <- IO.println("Compacting finished.")
+        } yield ()
       }
       .getOrElse(IO.println("Admin credentials not found; compacting skipped."))
       .as(ExitCode.Success)
+
+  private def compact(dataset: String)(using config: Config) =
+    CompactionInitiator.kickOffCompaction(dataset).flatMap {
+      case Left(err)     => IO.println(s"Compacting '$dataset' failed; $err")
+      case Right(taskId) => IO.println(s"Compacting '$dataset' started; taskId = $taskId")
+    }
