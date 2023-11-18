@@ -13,7 +13,7 @@ object Compactor extends IOApp:
 
   def run(args: List[String]): IO[ExitCode] =
     Config.fromConfig
-      .map { config =>
+      .fold(ifEmpty = IO.println("Admin credentials not found; compacting skipped.")) { config =>
         given Config = config
         for {
           datasets <- DatasetsFinder.findDatasets
@@ -21,7 +21,6 @@ object Compactor extends IOApp:
           _        <- IO.println("Compacting finished.")
         } yield ()
       }
-      .getOrElse(IO.println("Admin credentials not found; compacting skipped."))
       .as(ExitCode.Success)
 
   private def compact(dataset: String)(using config: Config) =
