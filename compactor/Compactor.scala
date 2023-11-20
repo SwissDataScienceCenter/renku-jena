@@ -6,8 +6,11 @@
 //> using dep org.typelevel::cats-core::2.10.0
 //> using resourceDir src
 
-import cats.effect.{ExitCode, IO, IOApp}
+import cats.effect.{ExitCode, IO, IOApp, Temporal}
 import cats.syntax.all.*
+
+import java.time.Duration as JDuration
+import scala.concurrent.duration.*
 
 object Compactor extends IOApp:
 
@@ -24,7 +27,23 @@ object Compactor extends IOApp:
       .as(ExitCode.Success)
 
   private def compact(dataset: String)(using config: Config) =
-    CompactionInitiator.kickOffCompaction(dataset).flatMap {
-      case Left(err)     => IO.println(s"Compacting '$dataset' failed; $err")
-      case Right(taskId) => IO.println(s"Compacting '$dataset' started; taskId = $taskId")
+    CompactionInitiator.kickOffCompaction(dataset) >>= {
+      case Left(err) =>
+        IO.println(s"Compacting '$dataset' failed; $err")
+      case Right(taskId) =>
+        IO.println(s"Compacting '$dataset' started; taskId = $taskId") >>
+          waitToFinish(taskId, dataset)
     }
+
+  private def waitToFinish(taskId: TaskId, dataset: String)(using config: Config): IO[Unit] =
+    TaskStatusFinder.hasFinished(taskId) >>= {
+      case Left(err)             => IO.println(err)
+      case Right(None)           => Temporal[IO].delayBy(waitToFinish(taskId, dataset), 2.seconds)
+      case Right(Some(duration)) => IO.println(s"Compacting '$dataset' done in ${makeReadable(duration)}")
+    }
+
+  private lazy val makeReadable: JDuration => String = {
+    case duration if duration.toMillis < 3 * 60  => s"${duration.toMillis}ms"
+    case duration if duration.toSeconds < 3 * 60 => s"${duration.toSeconds}s"
+    case duration                                => s"${duration.toMinutes}min"
+  }

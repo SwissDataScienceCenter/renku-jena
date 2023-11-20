@@ -4,7 +4,7 @@ import io.circe.Decoder
 import org.http4s.Method.POST
 import org.http4s.Status.Ok
 import org.http4s.circe.CirceEntityDecoder.*
-import org.http4s.{EntityDecoder, Headers, MediaType, Request}
+import org.http4s.{EntityDecoder, Headers, MediaType, Request, Response}
 
 object CompactionInitiator:
 
@@ -15,14 +15,18 @@ object CompactionInitiator:
                     (config.adminApi / "compact" / ds).withQueryParam("deleteOld", true),
                     headers = Headers(config.admin.asAuthHeader)
         )
-      }.use {
-        case resp if resp.status == Ok && resp.contentType.exists(_.mediaType == MediaType.application.json) =>
-          resp.as[TaskId].map(_.asRight)
-        case resp =>
-          import EntityDecoder.text
-          resp.as[String].map(_.trim.asLeft)
-      }
+      }.use(toTaskIdOrError)
     }
+
+  private lazy val toTaskIdOrError: Response[IO] => IO[Either[String, TaskId]] = {
+    case resp
+        if resp.status == Ok &&
+          resp.contentType.exists(_.mediaType == MediaType.application.json) =>
+      resp.as[TaskId].map(_.asRight)
+    case resp =>
+      import EntityDecoder.text
+      resp.as[String].map(_.trim.asLeft)
+  }
 
   private given Decoder[TaskId] =
     _.downField("taskId").as[String].map(TaskId.apply)
