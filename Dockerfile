@@ -110,7 +110,7 @@ COPY --from=build-stage /compactor/compact-jena /usr/bin/compact-jena
 
 WORKDIR ${FUSEKI_HOME}
 
-# Creating 'fuseki' system user to be used for starting the service
+## Creating 'fuseki' system user to be used for starting the service
 # -D : no password
 ENV GID=1000
 RUN adduser --disabled-password -g "$GID" -D -u 1000 -s /bin/sh -h ${FUSEKI_HOME} fuseki
@@ -139,6 +139,7 @@ USER fuseki
 RUN \
     rm -rf ${FUSEKI_BASE}/configuration/* && \
     rm -rf ${FUSEKI_BASE}/databases/*
+
 VOLUME ${FUSEKI_BASE}
 
 EXPOSE 3030

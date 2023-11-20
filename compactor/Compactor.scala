@@ -1,4 +1,5 @@
 //> using scala 3
+//> using dep eu.timepit::fs2-cron-calev::0.8.3
 //> using dep org.http4s::http4s-circe::0.23.24
 //> using dep org.http4s::http4s-dsl::0.23.24
 //> using dep org.http4s::http4s-ember-client::0.23.24
@@ -8,6 +9,9 @@
 
 import cats.effect.{ExitCode, IO, IOApp, Temporal}
 import cats.syntax.all.*
+import com.github.eikek.calev.CalEvent
+import eu.timepit.fs2cron.calev.CalevScheduler
+import fs2.Stream
 
 import java.time.Duration as JDuration
 import scala.concurrent.duration.*
@@ -15,16 +19,23 @@ import scala.concurrent.duration.*
 object Compactor extends IOApp:
 
   def run(args: List[String]): IO[ExitCode] =
-    Config.fromConfig
-      .fold(ifEmpty = IO.println("Admin credentials not found; compacting skipped.")) { config =>
-        given Config = config
-        for {
-          datasets <- DatasetsFinder.findDatasets
-          _        <- datasets.map(compact).sequence
-          _        <- IO.println("Compacting finished.")
-        } yield ()
-      }
+    Config.readConfig
+      .fold(
+        err => IO.println(s"Compacting skipped/failed: $err"),
+        config => schedule(compactDatasets(using config), config.schedule)
+      )
       .as(ExitCode.Success)
+
+  private def schedule(task: IO[Unit], schedule: CalEvent) =
+    val scheduler = CalevScheduler.systemDefault[IO]
+    (scheduler.awakeEvery(schedule) >> Stream.eval(task)).compile.drain
+
+  private def compactDatasets(using config: Config) =
+    for {
+      datasets <- DatasetsFinder.findDatasets
+      _        <- datasets.map(compact).sequence
+      _        <- IO.println("Compacting finished.")
+    } yield ()
 
   private def compact(dataset: String)(using config: Config) =
     CompactionInitiator.kickOffCompaction(dataset) >>= {
