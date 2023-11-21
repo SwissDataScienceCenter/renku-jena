@@ -1,5 +1,6 @@
 //> using scala 3
 //> using dep eu.timepit::fs2-cron-calev::0.8.3
+//> using dep org.apache.shiro:shiro-core:1.13.0
 //> using dep org.http4s::http4s-circe::0.23.24
 //> using dep org.http4s::http4s-dsl::0.23.24
 //> using dep org.http4s::http4s-ember-client::0.23.24

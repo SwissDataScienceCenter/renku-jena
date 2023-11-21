@@ -48,6 +48,11 @@ spec:
             {{- end }}
             - name: FUSEKI_BASE
               value: {{ .Values.fusekiBase }}
+            - name: SHIRO_INI_LOCATION
+              value: "{{ .Values.fusekiBase }}/shiro.ini"
+            {{- with .Values.compacting }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
           ports:
             - name: jena-http
               containerPort: 3030
