@@ -13,16 +13,17 @@ import cats.syntax.all.*
 import com.github.eikek.calev.CalEvent
 import eu.timepit.fs2cron.calev.CalevScheduler
 import fs2.Stream
+import org.typelevel.log4cats.Logger
 
 import java.time.Duration as JDuration
 import scala.concurrent.duration.*
 
-object Compactor extends IOApp:
+object Compactor extends IOApp with Logging:
 
   def run(args: List[String]): IO[ExitCode] =
     Config.readConfig
       .fold(
-        err => IO.println(s"Compacting skipped/failed: $err"),
+        err => Logger[IO].warn(s"Compacting skipped/failed: $err"),
         config => schedule(compactDatasets(using config), config.schedule)
       )
       .as(ExitCode.Success)
@@ -35,23 +36,23 @@ object Compactor extends IOApp:
     for {
       datasets <- DatasetsFinder.findDatasets
       _        <- datasets.map(compact).sequence
-      _        <- IO.println("Compacting finished.")
+      _        <- Logger[IO].info("Compacting finished.")
     } yield ()
 
   private def compact(dataset: String)(using config: Config) =
     CompactionInitiator.kickOffCompaction(dataset) >>= {
       case Left(err) =>
-        IO.println(s"Compacting '$dataset' failed; $err")
+        Logger[IO].error(s"Compacting '$dataset' failed; $err")
       case Right(taskId) =>
-        IO.println(s"Compacting '$dataset' started; taskId = $taskId") >>
+        Logger[IO].info(s"Compacting '$dataset' started; taskId = $taskId") >>
           waitToFinish(taskId, dataset)
     }
 
   private def waitToFinish(taskId: TaskId, dataset: String)(using config: Config): IO[Unit] =
     TaskStatusFinder.hasFinished(taskId) >>= {
-      case Left(err)             => IO.println(err)
+      case Left(err)             => Logger[IO].error(err)
       case Right(None)           => Temporal[IO].delayBy(waitToFinish(taskId, dataset), 2.seconds)
-      case Right(Some(duration)) => IO.println(s"Compacting '$dataset' done in ${makeReadable(duration)}")
+      case Right(Some(duration)) => Logger[IO].info(s"Compacting '$dataset' done in ${makeReadable(duration)}")
     }
 
   private lazy val makeReadable: JDuration => String = {
