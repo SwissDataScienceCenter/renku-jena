@@ -40,7 +40,7 @@ object Compactor extends IOApp with Logging:
     } yield ()
 
   private def compact(dataset: String)(using config: Config) =
-    CompactionInitiator.kickOffCompactiond(dataset) >>= {
+    CompactionInitiator.kickOffCompaction(dataset) >>= {
       case Left(err) =>
         Logger[IO].error(s"Compacting '$dataset' failed; $err")
       case Right(taskId) =>
