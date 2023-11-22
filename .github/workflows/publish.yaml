@@ -23,7 +23,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: coursier/cache-action@v6.3
-      - uses: VirtusLab/scala-cli-setup@v0.1
+      - uses: VirtusLab/scala-cli-setup@v1.0.6
       - run: scala-cli compile compactor/src/* compactor/Compactor.scala
   publish:
     name: Publish
@@ -44,7 +44,7 @@ jobs:
         uses: docker/setup-qemu-action@v1
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-      - name: Install python
+      - name: Install pythondd
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
