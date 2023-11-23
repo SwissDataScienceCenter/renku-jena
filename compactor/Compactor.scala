@@ -28,9 +28,15 @@ object Compactor extends IOApp with Logging:
       )
       .as(ExitCode.Success)
 
-  private def schedule(task: IO[Unit], schedule: CalEvent) =
+  private val delayOnError: Duration = 1.hour
+
+  private def schedule(task: IO[Unit], scheduleEvent: CalEvent): IO[Unit] =
     val scheduler = CalevScheduler.systemDefault[IO]
-    (scheduler.awakeEvery(schedule) >> Stream.eval(task)).compile.drain
+    (scheduler.awakeEvery(scheduleEvent) >> Stream.eval(task)).compile.drain
+      .handleError(
+        Logger[IO].error(_)(s"Compacting failed; retrying in $delayOnError") >>
+          Temporal[IO].delayBy(schedule(task, scheduleEvent), delayOnError)
+      )
 
   private def compactDatasets(using config: Config) =
     for {
