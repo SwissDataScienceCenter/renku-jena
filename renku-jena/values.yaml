@@ -79,6 +79,14 @@ additionalEnvironmentVariables: []
 #  - name: JVM_ARGS
 #    value: -Xmx2G -Xms2G
 
+# In order to enable periodic datasets compacting, the following entries need to be specified.
+# The defaults would work only with the default `shiro.ini`.
+compacting: []
+#  - name: ADMIN_USER
+#    value: admin
+#  - name: COMPACTING_SCHEDULE
+#    value: Mon *-*-* 00:00:00 # every Monday at 00:00:00. More details at https://github.com/eikek/calev
+
 # Mounting point for the $FUSEKI_BASE folder (where configuration and data is kept)
 fusekiBase: /fuseki
 

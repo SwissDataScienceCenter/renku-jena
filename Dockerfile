@@ -77,6 +77,16 @@ RUN \
         --output "${JAVA_MINIMAL}" \
         --add-modules "${JDEPS},${JDEPS_EXTRA}"
 
+COPY /compactor/src/*.scala /compactor/src/
+COPY /compactor/Compactor.scala /compactor/
+
+RUN \
+  apk add --no-cache wget coreutils && \
+  wget -q -O scala-cli.gz https://github.com/Virtuslab/scala-cli/releases/latest/download/scala-cli-x86_64-pc-linux-static.gz && gunzip scala-cli.gz && \
+  chmod +x scala-cli && \
+  mv scala-cli /usr/bin/ && \
+  scala-cli --power package /compactor/src /compactor/Compactor.scala -o /compactor/compact-jena --assembly
+
 ## -- Copying entrypoint.sh
 COPY entrypoint.sh /
 
@@ -89,17 +99,21 @@ ARG FUSEKI_HOME
 ARG FUSEKI_BASE
 ARG JAVA_MINIMAL
 ARG JVM_ARGS
+ARG ADMIN_USER
+ARG SHIRO_INI_LOCATION
+ARG COMPACTING_SCHEDULE
 
-RUN apk add --no-cache curl tini
+RUN apk add --no-cache curl tini bash
 
 COPY --from=build-stage /opt/java-minimal /opt/java-minimal
 COPY --from=build-stage $FUSEKI_HOME $FUSEKI_HOME
 COPY --from=build-stage /etc/passwd /etc/passwd
 COPY --from=build-stage /entrypoint.sh /entrypoint.sh
+COPY --from=build-stage /compactor/compact-jena /usr/bin/compact-jena
 
 WORKDIR ${FUSEKI_HOME}
 
-# Creating 'fuseki' system user to be used for starting the service
+## Creating 'fuseki' system user to be used for starting the service
 # -D : no password
 ENV GID=1000
 RUN adduser --disabled-password -g "$GID" -D -u 1000 -s /bin/sh -h ${FUSEKI_HOME} fuseki
@@ -121,13 +135,17 @@ ENV \
     FUSEKI_HOME="${FUSEKI_HOME}"  \
     FUSEKI_BASE="${FUSEKI_BASE}"  \
     LOGGING="-Dlog4j.configurationFile=${FUSEKI_BASE}/log4j2.properties" \
-    PATH="${JAVA_MINIMAL}/bin:${FUSEKI_HOME}/bin:${PATH}"
+    PATH="${JAVA_MINIMAL}/bin:${FUSEKI_HOME}/bin:${PATH}" \
+    ADMIN_USER="${ADMIN_USER}" \
+    SHIRO_INI_LOCATION="${SHIRO_INI_LOCATION}" \
+    COMPACTING_SCHEDULE="${COMPACTING_SCHEDULE}"
 
 USER fuseki
 
 RUN \
     rm -rf ${FUSEKI_BASE}/configuration/* && \
     rm -rf ${FUSEKI_BASE}/databases/*
+
 VOLUME ${FUSEKI_BASE}
 
 EXPOSE 3030

@@ -12,10 +12,23 @@ jobs:
       - uses: rokroskar/workflow-run-cleanup-action@v0.3.0
         env:
           GITHUB_TOKEN: "${{ secrets.RENKUBOT_GITHUB_TOKEN }}"
+  compile-compactor:
+    name: Compile Compactor tool
+    runs-on: ubuntu-latest
+    needs: [ cleanup-previous-runs ]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: coursier/cache-action@v6.3
+      - uses: VirtusLab/scala-cli-setup@v1.0.6
+        with:
+          jvm: temurin:21
+      - run: scala-cli compile compactor/src/* compactor/Compactor.scala
   publish:
     name: Publish
     runs-on: ubuntu-latest
-    needs: [ cleanup-previous-runs ]
+    needs: [ compile-compactor ]
     env:
       GIT_USER: Renku Bot
       GIT_EMAIL: renku@datascience.ch

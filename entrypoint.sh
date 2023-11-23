@@ -21,4 +21,4 @@ if [[ ! -n "$FUSEKI_COMMAND" ]] ; then
   export FUSEKI_COMMAND="--conf=${FUSEKI_BASE}/config.ttl"
 fi
 
-exec "${FUSEKI_HOME}/fuseki-server" "$FUSEKI_COMMAND"
+exec /usr/bin/compact-jena & "${FUSEKI_HOME}/fuseki-server" "$FUSEKI_COMMAND"

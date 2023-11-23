@@ -15,6 +15,12 @@ docker build --force-rm --build-arg JENA_VERSION=4.10.0 -t fuseki .
 
 It's possible to build the image for `linux/amd64` and `linux/arm64` platforms.
 
+In the case the image will be run on a `linux/amd64` platform but building happens on a platform with different architecture, 
+the docker build command could look like follows:
+```
+docker buildx build --platform linux/amd64 --force-rm --build-arg JENA_VERSION=4.10.0 -t fuseki .
+```
+
 ## Running docker image
 
 There are images built for `linux/amd64` and `linux/arm64` available on dockerhub. For available versions check [renku/renku-jena page](https://hub.docker.com/r/renku/renku-jena/tags).
@@ -40,6 +46,8 @@ There's a set of values that have to be configured in order to make Fuseki worki
 * `persistence.size` - size of the persistence volume; defaulted to 1Gi;
 * `additionalEnvironmentVariables.JVM_ARGS` - flags to be passed to the JVM in the server startup command; it's common to pass some memory related settings to JVM, e.g. `-Xmx2048m -Xms2048m`.
 * `requests.memory` - amount of memory requested for the container; should be higher than 'Xmx' if set on `additionalEnvironmentVariables.JVM_ARGS`;
+* `compacting.ADMIN_USER` - username of an admin user who has access to Fuseki Admin API, e.g. `admin` if the default `shiro.ini` is used.
+* `compacting.COMPACTING_SCHEDULE` - an expression defining schedule of compacting execution, e.g. `Mon *-*-* 00:00:00` meaning every Monday at 00:00:00. More details can be found at https://github.com/eikek/calev.
 
 By default, the chart creates a Persistent Volume and mounts it at `$FUSEKI_BASE`. This folder is used by Fuseki for storing both the configuration and the data. It's crucial for `$FUSEKI_BASE` to be on a persistent volume, otherwise the configuration and the data will be lost on server shutdown. As mentioned above, it's recommended not to modify the mounting point but simply mount a volume to `/fuseki`.
 

@@ -103,6 +103,7 @@ project/plugins/project/
 .cache
 .lib/
 .bsp/
+.scala-build/
 
 
 ### Scala ###
