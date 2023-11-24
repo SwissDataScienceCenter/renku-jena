@@ -1,8 +1,14 @@
 name: Publish Helm chart
 on:
   push:
-    tags:
-      - '*.*.*'
+    branches:
+      - main
+      - "hotfix-[0-9]+.[0-9]+**"
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
 jobs:
   cleanup-previous-runs:
     name: Cleanup previous runs
@@ -12,8 +18,21 @@ jobs:
       - uses: rokroskar/workflow-run-cleanup-action@v0.3.0
         env:
           GITHUB_TOKEN: "${{ secrets.RENKUBOT_GITHUB_TOKEN }}"
+  compile-compactor:
+    name: Compile Compactor tool
+    runs-on: ubuntu-latest
+    needs: [ cleanup-previous-runs ]
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: coursier/cache-action@v6.3
+      - uses: VirtusLab/scala-cli-setup@v1.0.6
+        with:
+          jvm: temurin:21
+      - run: scala-cli compile compactor/src/* compactor/Compactor.scala
   publish:
-    name: Publish
+    name: Try building images
     runs-on: ubuntu-latest
     needs: [ compile-compactor ]
     env:
@@ -40,8 +59,4 @@ jobs:
           python -m pip install chartpress
       - name: Build and push chart and images
         run: |
-          git config --global user.email "$GIT_EMAIL"
-          git config --global user.name "$GIT_USER"
-          git config --global --add safe.directory /github/workspace
-          echo ${{ secrets.RENKU_DOCKER_PASSWORD }} | docker login -u ${{ secrets.RENKU_DOCKER_USERNAME }} --password-stdin
-          chartpress --push --publish-chart --tag "$CHART_TAG" --image-prefix renku/ --builder docker-buildx --platform linux/amd64 --platform linux/arm64
+          chartpress --image-prefix renku/ --builder docker-buildx --platform linux/amd64 --platform linux/arm64
