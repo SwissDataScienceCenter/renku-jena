@@ -18,22 +18,19 @@
 ## This Dockefile builds a reduced footprint container.
 
 ARG ALPINE_VERSION=3.19.1
-ARG JDK_VERSION=21.0.2_13
 ARG JENA_VERSION="5.0.0"
 ARG JVM_ARGS="-Xmx2048m -Xms2048m"
 
 # Internal, passed between stages.
 ARG FUSEKI_HOME=/jena-fuseki
 ARG FUSEKI_BASE=/fuseki
-ARG JAVA_MINIMAL=/opt/java-minimal
 
 ## ---- Stage: Download and build java.
-FROM eclipse-temurin:${JDK_VERSION}-jdk-alpine AS build-stage
+FROM eclipse-temurin:21-jdk-alpine AS build-stage
 
 ARG JENA_VERSION
 ARG FUSEKI_HOME
 ARG FUSEKI_BASE
-ARG JAVA_MINIMAL
 ARG JVM_ARGS
 ARG REPO=https://repo1.maven.org/maven2
 ARG FUSEKI_TAR_NAME=apache-jena-fuseki-${JENA_VERSION}
@@ -68,15 +65,6 @@ COPY config.ttl ${FUSEKI_HOME}/run/config.ttl
 ## -- Copying log4j2.properties
 COPY log4j2.properties ${FUSEKI_HOME}/run/log4j2.properties
 
-## -- Make reduced Java JDK
-ARG JDEPS_EXTRA="jdk.crypto.cryptoki,jdk.crypto.ec"
-RUN \
-  JDEPS="$(jdeps --multi-release base --print-module-deps --ignore-missing-deps ${FUSEKI_HOME}/fuseki-server.jar)"  && \
-  jlink \
-        --compress 2 --strip-debug --no-header-files --no-man-pages \
-        --output "${JAVA_MINIMAL}" \
-        --add-modules "${JDEPS},${JDEPS_EXTRA}"
-
 COPY /compactor/src/*.scala /compactor/src/
 COPY /compactor/Compactor.scala /compactor/
 
@@ -97,15 +85,13 @@ FROM alpine:${ALPINE_VERSION}
 ARG JENA_VERSION
 ARG FUSEKI_HOME
 ARG FUSEKI_BASE
-ARG JAVA_MINIMAL
 ARG JVM_ARGS
 ARG ADMIN_USER
 ARG SHIRO_INI_LOCATION
 ARG COMPACTING_SCHEDULE
 
-RUN apk add --no-cache curl tini bash
+RUN apk add --no-cache curl tini bash openjdk21-jdk
 
-COPY --from=build-stage /opt/java-minimal /opt/java-minimal
 COPY --from=build-stage $FUSEKI_HOME $FUSEKI_HOME
 COPY --from=build-stage /etc/passwd /etc/passwd
 COPY --from=build-stage /entrypoint.sh /entrypoint.sh
@@ -129,13 +115,12 @@ RUN \
 
 ## Default environment variables.
 ENV \
-    JAVA_HOME=${JAVA_MINIMAL}     \
     JVM_ARGS=${JVM_ARGS}          \
     JENA_VERSION=${JENA_VERSION}  \
     FUSEKI_HOME="${FUSEKI_HOME}"  \
     FUSEKI_BASE="${FUSEKI_BASE}"  \
     LOGGING="-Dlog4j.configurationFile=${FUSEKI_BASE}/log4j2.properties" \
-    PATH="${JAVA_MINIMAL}/bin:${FUSEKI_HOME}/bin:${PATH}" \
+    PATH="${FUSEKI_HOME}/bin:${PATH}" \
     ADMIN_USER="${ADMIN_USER}" \
     SHIRO_INI_LOCATION="${SHIRO_INI_LOCATION}" \
     COMPACTING_SCHEDULE="${COMPACTING_SCHEDULE}"

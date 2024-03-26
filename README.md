@@ -5,7 +5,6 @@ This project builds Docker image and a helm chart for chosen version of [Fuseki 
 
 The Docker image building process takes the following arguments:
 `JENA_VERSION` defaulted to `5.0.0`
-`JDK_VERSION` defaulted to `21.0.2_13`
 `ALPINE_VERSION` defaulted to `3.19.1`
 
 To build the Docker image manually the following command can be used:
